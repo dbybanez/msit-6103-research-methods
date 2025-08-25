@@ -1,0 +1,9 @@
+linters: lintr::linters_with_defaults(
+  line_length_linter = lintr::line_length_linter(80),  # keep lines ≤ 80
+  object_usage_linter = NULL                           # (optional) quieter
+)
+
+# (optional) skip folders that shouldn't be linted
+exclusions: list(
+  "renv", "packrat", "node_modules", "data"
+)

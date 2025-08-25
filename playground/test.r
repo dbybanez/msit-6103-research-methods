@@ -5,19 +5,22 @@
 install_if_missing <- function(pkgs) {
   installed <- rownames(installed.packages())
   to_install <- pkgs[!pkgs %in% installed]
-  if (length(to_install)) install.packages(to_install, repos = "https://cloud.r-project.org")
+  if (length(to_install)) {
+    install.packages(to_install, repos = "https://cloud.r-project.org")
+  }
   invisible(lapply(pkgs, library, character.only = TRUE))
 }
 
 install_if_missing(c(
-  "tidyverse",   # ggplot2, dplyr, readr, tibble, etc.
-  "data.table",  # fast CSV read (fread)
-  "janitor",     # clean names, tabyl
-  "skimr",       # rich summary
-  "naniar",      # missingness viz
-  "GGally",      # correlation/pairs plots
-  "lubridate",   # dates, if present
-  "patchwork"    # simple plot layouts if needed
+  "tidyverse", # ggplot2, dplyr, readr, tibble, etc.
+  "data.table", # fast CSV read (fread)
+  "janitor", # clean names, tabyl
+  "skimr", # rich summary
+  "naniar", # missingness viz
+  "GGally", # correlation/pairs plots
+  "lubridate", # dates, if present
+  "patchwork", # simple plot layouts if needed
+  "styler" # code formatting
 ))
 
 # 2) Basic environment info ---------------------------------------------------
@@ -28,10 +31,10 @@ print(.packages())
 
 # 3) I/O paths ----------------------------------------------------------------
 setwd("playground")
-csv_path <- "data/test-data.csv"  
+csv_path <- "data/test-data.csv"
 stopifnot(file.exists(csv_path))
 
-out_dir  <- "output"
+out_dir <- "output"
 plot_dir <- file.path(out_dir, "plots")
 dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
 
@@ -58,9 +61,16 @@ print(skimr::skim(df))
 miss_any <- any(is.na(df))
 cat("\nAny missing values? ", miss_any, "\n", sep = "")
 if (miss_any) {
-  p_miss <- naniar::gg_miss_var(df) + ggplot2::labs(title = "Missingness by Column")
+  p_miss <- naniar::gg_miss_var(df) +
+    ggplot2::labs(title = "Missingness by Column")
   print(p_miss)
-  ggplot2::ggsave(filename = file.path(plot_dir, "missingness_by_column.png"), p_miss, width = 8, height = 5, dpi = 120)
+  ggplot2::ggsave(
+    filename = file.path(plot_dir, "missingness_by_column.png"),
+    p_miss,
+    width = 8,
+    height = 5,
+    dpi = 120
+  )
 }
 
 # 8) Auto-detect types for plotting ------------------------------------------
@@ -125,12 +135,15 @@ if (length(num_cols) >= 2) {
 
 # 12) Simple scatter if we have ≥2 numeric vars -------------------------------
 if (length(num_cols) >= 2) {
-  xcol <- num_cols[1]; ycol <- num_cols[2]
+  xcol <- num_cols[1]
+  ycol <- num_cols[2]
   p_scatter <- ggplot2::ggplot(df, ggplot2::aes(x = .data[[xcol]], y = .data[[ycol]])) +
     ggplot2::geom_point(alpha = 0.7) +
     ggplot2::geom_smooth(method = "lm", se = FALSE) +
     ggplot2::labs(title = paste("Scatter:", xcol, "vs", ycol), x = xcol, y = ycol)
   print(p_scatter)
   ggplot2::ggsave(file.path(plot_dir, paste0("scatter_", xcol, "_vs_", ycol, ".png")),
-                  p_scatter, width = 7, height = 5, dpi = 120)
+    p_scatter,
+    width = 7, height = 5, dpi = 120
+  )
 }
