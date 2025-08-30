@@ -105,3 +105,15 @@ f1_speed[f1_speed <= 320]
 
 # Extract elements that are not equal to 290, 310, 330
 f1_speed[!(f1_speed %in% c(290, 310, 330))]
+
+# Extract all elements with a value greater than 290 AND less than 330
+f1_speed[f1_speed > 290 & f1_speed < 330]
+
+# Extract all elements with a value greater than 290 OR less than 330
+f1_speed[f1_speed > 290 | f1_speed < 330]
+
+# Replace the 2nd element with 295
+f1_speed[2] <- 295
+
+# Replace the 6th and 10th elements with 250
+f1_speed[c(2, 6)] <- 250
