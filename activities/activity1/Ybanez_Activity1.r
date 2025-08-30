@@ -252,7 +252,8 @@ var_temp_na <- var(temp)
 var_temp_na # This will return NA
 
 # Calculate the length without the missing value
-length_temp <- length(temp[!is.na(temp)])
+# is.na() identifies NAs and ! negates it
+length_temp <- length(temp[!is.na(temp)]) 
 length_temp
 length_temp_alt <- sum(!is.na(temp)) # Alternative method
 length_temp_alt
