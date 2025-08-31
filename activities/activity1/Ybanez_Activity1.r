@@ -4,7 +4,7 @@
 # By: David Ybanez (MSIT 2)
 
 # Contents include:
-# -- 1. Mathematical Operations 
+# -- 1. Mathematical Operations
 # -- 2. Genetics Class Scores
 # -- 3. Temperature Readings
 
@@ -253,7 +253,7 @@ var_temp_na # This will return NA
 
 # Calculate the length without the missing value
 # is.na() identifies NAs and ! negates it
-length_temp <- length(temp[!is.na(temp)]) 
+length_temp <- length(temp[!is.na(temp)]) # temp != 'NA' in most programming languages
 length_temp
 length_temp_alt <- sum(!is.na(temp)) # Alternative method
 length_temp_alt
@@ -261,3 +261,9 @@ length_temp_alt
 # Calculate length with missing value
 length_temp_na <- length(temp)
 length_temp_na # This will return 10, including NA
+
+# Additional checks for understanding NA vs NULL
+is.na(NULL) # NULL is not NA
+is.na(NA) # NA is NA
+is.null(NA) # NA is not NULL
+is.null(NULL) # NULL is NULL
