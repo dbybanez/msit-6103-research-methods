@@ -1,7 +1,8 @@
 # MSIT 6103 Research Methods
 # Activity 1
 
-# By: David Ybanez (MSIT 2)
+# By: David Ybanez (MSIT 2) University of San Carlos
+# Date: August 30, 2025
 
 # Contents include:
 # -- 1. Mathematical Operations
