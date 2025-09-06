@@ -8,21 +8,55 @@
 # By: David Ybanez (MSIT 2)
 
 # Contents include:
+# -- I. Initial setup for working directory
 # -- A. Importing and Exporting Data
 # -- B. Exploring Data
 # -- C. Filtering Data
 # -- D. Creating a Bar Plot of Species Richness in Edinburgh
 
+# ------ I. Initial setup for working directory -------------------------------
+
+# Install and load the this.path package to manage file paths
+
+# this.path package
+# The this.path package provides functions to get the path of the currently
+# running script. This is useful for managing file paths in R scripts,
+# especially when working with relative paths for data files and outputs.
+
+# Install the this.path package if not already installed
+if (!requireNamespace("this.path", quietly = TRUE)) {
+  install.packages("this.path", repos = "https://cloud.r-project.org")
+}
+
+# Load the this.path package
+library(this.path)
+
+# Set the root directory to the location of the current script
+# This helps in managing file paths for data import/export
+script_root <- tryCatch(this.path::this.dir(), error = function(e) normalizePath(getwd()))
+
+# Function to create file paths relative to the script root
+p <- function(...) file.path(script_root, ...)
+
+# Set working directory to script root
+setwd(script_root)
+
+# Set output directory and create it
+out_dir <- "output"
+plot_dir <- file.path(out_dir, "plots")
+dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
+
+# Validate the paths
+# Check if the data directory and specific data file exist
+# Uncomment the lines below to see the path validations
+# cat("Script root:   ", script_root, "\n")
+# cat("Data dir:      ", p("data"), "  exists:", dir.exists(p("data")), "\n")
+# cat("Data file:     ", p("data","edidiv.csv"), "  exists:", file.exists(p("data","edidiv.csv")), "\n")
+# cat("Output dir:    ", p("output"), "\n")
+
 # ------ A. Importing and Exporting Data --------------------------------------
 
-# Install and load the here and dplyr packages
-
-# here package
-# The here package is used to construct file paths relative to the top-level
-# directory of a project. It helps in managing file paths in a way that is
-# independent of the current working directory, making it easier to share code
-# and data across different systems and environments.
-install.packages("here")
+# Install and load the dplyr package
 
 # dplyr package
 # The dplyr package is a powerful and popular R package for data manipulation
@@ -31,48 +65,72 @@ install.packages("here")
 # filtering, selecting, mutating, summarizing, and arranging data.
 install.packages("dplyr")
 
-# Load the here and dplyr packages
-library(here)
+# Load the dplyr package
 library(dplyr)
 
-# Display current working directory
-here::dr_here()
+# Load the edidiv dataset from the data directory
+edidiv <- read.csv(p("data","edidiv.csv"))
 
-# Import CSV file using read.csv() and here() functions
-# The read.csv() function is used to read data from a CSV (Comma-Separated
-# Values) file and create a data frame in R. The here() function from the here
-# package is used to construct the file path to the CSV file in a way that is
-# independent of the current working directory.
-edidiv <- read.csv(here("data", "edidiv.csv"))
+# Display first few rows of the data
+head(edidiv) 
 
+# Display last few rows of the data
+tail(edidiv)
 
-head(edidiv) # Display first few rows of the data
-tail(edidiv) # Display last few rows of the data
-str(edidiv) # Display structure of the data
+# Display structure of the data
+str(edidiv)
 
-head(edidiv$taxonGroup) # Display first few entries of taxonGroup column
-class(edidiv$taxonGroup) # Display class of taxonGroup column
-edidiv$taxonGroup <- as.factor(edidiv$taxonGroup) # Convert taxonGroup column to factor
-class(edidiv$taxonGroup) # Display class of taxonGroup column after conversion
+# Display first few entries of taxonGroup column
+head(edidiv$taxonGroup)
+
+# Display class of taxonGroup column
+class(edidiv$taxonGroup) 
+
+# Convert taxonGroup column to factor
+edidiv$taxonGroup <- as.factor(edidiv$taxonGroup)
+
+# Display class of taxonGroup column after conversion
+class(edidiv$taxonGroup) 
 
 # Using square brackets to filter data in edidiv
-# Note: In R, the square bracket [ ] notation is used to extract specific rows or columns from a data frame. This notation follows the format dataframe[rows, columns], where rows specify the desired rows and columns specify the desired columns.
-# Example:
-# [1:4, ] only row 1-4
-edidiv[1:4, ] # Display first four rows of all columns
-# [-3, ] all rows except third row
-edidiv[-3, ] # Display all rows except the third row
-# [,1:4] only columns 1-4
-edidiv[,1:4] # Display all rows of columns 1 to 4
-# [,-5] all rows except fifth column
-edidiv[,-5] # Display all rows of all columns except the fifth column
-# [c(1,3,5), ] only rows 1, 3, and 5
-edidiv[c(1,3,5), ] # Display rows
+# The square brackets [ ] are used for indexing and subsetting data frames in R.
+# The general syntax is data_frame[rows, columns], where you can specify the
+# rows and columns you want to select. Leaving a space before or after the comma
+# indicates that you want to select all rows or all columns, respectively.
 
-# The edidiv object contains species occurrence records collected in Edinburgh between 2000 and 2016. To explore the city’s biodiversity, we’ll create a graph showing the number of species recorded in each taxonomic group. Species richness refers to the total number of distinct species within a given area or group. To find out how many species of birds, plants, mammals, and so on are present in Edinburgh, we’ll first need to split the edidiv dataset into separate objects—each containing data for just one taxonomic group. For this, we’ll use the powerful filter() function from the dplyr package.
+# Example:
+
+# Display first four rows of all columns
+# [1:4, ] only row 1-4
+edidiv[1:4, ] 
+
+# Display all rows except the third row
+# [-3, ] all rows except third row
+# edidiv[-3, ] # dont run this line, it will display a lot of rows 
+
+# Display all rows of columns 1 to 4
+# [,1:4] only columns 1-4
+# edidiv[,1:4] # dont run this line, it will display a lot of rows
+
+# Display all rows of all columns except the fifth column
+# [,-5] all rows except fifth column
+# edidiv[,-5] # dont run this line, it will display a lot of rows
+
+# Display specific rows
+# [c(1,3,5), ] only rows 1, 3, and 5
+edidiv[c(1,3,5), ] 
+
+# The edidiv object contains species occurrence records collected in Edinburgh 
+# between 2000 and 2016. To explore the city’s biodiversity, we’ll create a
+# graph showing the number of species recorded in each taxonomic group. Species
+# richness refers to the total number of distinct species within a given area 
+# or group. To find out how many species of birds, plants, mammals, and so on 
+# are present in Edinburgh, we’ll first need to split the edidiv dataset into 
+# separate objects—each containing data for just one taxonomic group. For 
+# this, we’ll use the powerful filter() function from the dplyr package.
 
 # Filter data for birds
-Bird <- filter(edidiv, taxonGroup == "Bird") # Create a new object for birds
+Bird <- filter(edidiv, taxonGroup == "Bird")
 
 # Filter data for flowering plants
 Flowering.Plants <- filter(edidiv, taxonGroup == "Flowering.Plants")
@@ -104,41 +162,76 @@ Mollusc <- filter(edidiv, taxonGroup == "Mollusc")
 # Filter data for mammals
 Mammal <- filter(edidiv, taxonGroup == "Mammal")
 
-
-# Filter 
-
-summary(edidiv) # Display summary of edidiv data
+# Display summary of edidiv data
+summary(edidiv)
 
 # Show the different taxonomic groups in the dataset
 unique(edidiv$taxonGroup) # Display unique taxonomic groups in taxonGroup
 
 # ⏱️Practice Time
-# Do these for steps for all taxa in the dataset. Once you have created objects for each taxon, we can calculate species richness, i.e. the number of different species in each group. For this, we will nest two functions together: unique(), which identifies different species, and length(), which counts them.
+# Do these for steps for all taxa in the dataset. Once you have created objects
+# for each taxon, we can calculate species richness, i.e. the number of 
+# different species in each group. For this, we will nest two functions
+# together: unique(), which identifies different species, and length(), which 
+# counts them.
 
-birdUnique <- length(unique(Bird$taxonName)) # Count unique species names in Bird group
-floweringPlantsUnique <- length(unique(Flowering.Plants$taxonName)) # Count unique species names in Flowering.Plants group
-fungusUnique <- length(unique(Fungus$taxonName)) # Count unique species names in Fungus group
-beetleUnique <- length(unique(Beetle$taxonName)) # Count unique species names in Beetle group
-butterFlyUnique <- length(unique(Butterfly$taxonName)) # Count unique species names in Butterfly group
-dragonFlyUnique <- length(unique(Dragon.Fly$taxonName)) # Count unique species names in Dragon.Fly grouph
-hymenopteranUnique <- length(unique(Hymenopteran$taxonName)) # Count unique species names in Hymenoptera group
-lichenUnique <- length(unique(Lichen$taxonName)) # Count unique species names in Lichen group
-liverwortUnique <- length(unique(Liverwort$taxonName)) # Count unique species names in Liverwort group
-molluscUnique <- length(unique(Mollusc$taxonName)) # Count unique species names in Mollusc group
-mammalUnique <- length(unique(Mammal$taxonName)) # Count unique species names in Mammal group
+# Count unique species names in Bird group
+unique_bird <- length(unique(Bird$taxonName)) 
+
+# Count unique species names in Flowering.Plants group
+unique_flowering_plants <- length(unique(Flowering.Plants$taxonName))
+
+# Count unique species names in Fungus group
+unique_fungus <- length(unique(Fungus$taxonName)) 
+
+# Count unique species names in Beetle group
+unique_beetle <- length(unique(Beetle$taxonName)) 
+
+# Count unique species names in Butterfly group
+unique_butterfly <- length(unique(Butterfly$taxonName)) 
+
+# Count unique species names in Dragonfly grouph
+unique_dragonfly <- length(unique(Dragonfly$taxonName)) 
+
+# Count unique species names in Hymenoptera group
+unique_hymenopteran <- length(unique(Hymenopteran$taxonName)) 
+
+# Count unique species names in Lichen group
+unique_lichen <- length(unique(Lichen$taxonName)) 
+
+# Count unique species names in Liverwort group
+unique_liverwort <- length(unique(Liverwort$taxonName)) 
+
+# Count unique species names in Mollusc group
+unique_mollusc <- length(unique(Mollusc$taxonName)) 
+
+# Count unique species names in Mammal group
+unique_mammal <- length(unique(Mammal$taxonName)) 
 
 # Combine the results into a vector
+biodiv <- c(unique_beetle, unique_bird, unique_butterfly, unique_dragonfly, unique_flowering_plants, unique_fungus, unique_hymenopteran, unique_lichen, unique_liverwort, unique_mammal, unique_mollusc)
 
-biodiv <- c(beetleUnique, birdUnique, butterFlyUnique, dragonFlyUnique, floweringPlantsUnique, fungusUnique, hymenopteranUnique, lichenUnique, liverwortUnique, mammalUnique, molluscUnique) # Combine species counts into a vector
-biodiv # Display the biodiversity vector in alphabetical order
-names(biodiv) <- c("Beetle", "Bird", "Butterfly", "Dragonfly", "Flowering.Plants", "Fungus", "Hymenopteran", "Lichen", "Liverwort", "Mammal", "Mollusc") # Assign names to the vector elements
+# Display the biodiversity vector in alphabetical order
+biodiv 
 
-barplot(biodiv) # Create a basic bar plot of species richness
-barplot(biodiv, main="Species Richness in Edinburgh by Taxonomic Group", xlab="Taxonomic Group", ylab="Number of Species", col="lightblue", las=2) # Create a bar plot of species richness
+# Assign names to the vector elements
+names(biodiv) <- c("Beetle", "Bird", "Butterfly", "Dragonfly", "Flowering.Plants", "Fungus", "Hymenopteran", "Lichen", "Liverwort", "Mammal", "Mollusc")
 
+# Create a basic bar plot of species richness
+barplot(biodiv) 
+
+# Create a bar plot of species richness with labels and title
+barplot(biodiv, main="Species Richness in Edinburgh by Taxonomic Group", xlab="Taxonomic Group", ylab="Number of Species", col="lightblue", las=2) 
+
+# Save the bar plot as a PNG file relative to the script location
+# Open a PNG device
+png("output/barplot.png", width=1600, height=600)
 png("barplot.png", width=1600, height=600)
 
+# Create a more customized bar plot
 barplot(biodiv, xlab="Taxa", ylab="Number of Species", ylim=c(0,600), cex.names=1.5, cex.axis=1.5, cex.lab=1.5)
+
+# Turn off the PNG device 
 dev.off()
 
 # Create a dataframe and plot it. 
