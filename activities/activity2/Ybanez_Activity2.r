@@ -91,6 +91,9 @@ n_wingspan_agg
 se_wingspan_agg <- sd_wingspan_agg$Wingspan / sqrt(n_wingspan_agg$Wingspan)
 se_wingspan_agg
 
+## (optional) quick table to see the numbers
+round(cbind(mean = mean_wingspan_agg$Wingspan, sd = sd_wingspan_agg$Wingspan, n = n_wingspan_agg$Wingspan, se = se_wingspan_agg), 3)
+
 # Create a bar plot with error bars
 bar_centers <- barplot(mean_wingspan_agg$Wingspan, names.arg = mean_wingspan_agg$Species, ylim = c(0, 220), ylab = "Mean Wingspan (cm)", xlab = "Bird Species", main = "Mean Wingspan of Different Bird Species")
 arrows(bar_centers, mean_wingspan_agg$Wingspan - se_wingspan_agg, bar_centers, mean_wingspan_agg$Wingspan + se_wingspan_agg, angle = 90, code = 3, length = 0.1, col = "red")
