@@ -20,8 +20,9 @@
 
 # this.path package
 # The this.path package provides functions to get the path of the currently
-# running script. This is useful for managing file paths in R scripts,
-# especially when working with relative paths for data files and outputs.
+# executing script. This is useful for setting working directories and managing
+# file paths in a way that is relative to the script's location, making scripts
+# more portable and easier to share.
 
 # Install the this.path package if not already installed
 if (!requireNamespace("this.path", quietly = TRUE)) {
