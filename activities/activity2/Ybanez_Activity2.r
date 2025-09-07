@@ -1,8 +1,8 @@
 # MSIT 6103 Research Methods
-# Activity 1
+# Activity 2
 
 # By: David Ybanez (MSIT 2) University of San Carlos
-# Date: August 30, 2025
+# Date: September 07, 2025
 
 # Contents include:
 # -- I. Initial setup for working directory and load packages
