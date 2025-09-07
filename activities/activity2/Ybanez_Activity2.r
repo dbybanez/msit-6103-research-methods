@@ -338,11 +338,11 @@ mean_temp
 sd_temp <- sd(temp_data$temperature, na.rm = TRUE)
 sd_temp
 
-# Calculate maximum temperature
+# Get maximum temperature
 max_temp <- max(temp_data$temperature, na.rm = TRUE)
 max_temp
 
-# Calculate minimum temperature
+# Get minimum temperature
 min_temp <- min(temp_data$temperature, na.rm = TRUE)
 min_temp
 
