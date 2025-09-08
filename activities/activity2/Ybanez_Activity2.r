@@ -1,8 +1,8 @@
 # MSIT 6103 Research Methods
-# Activity 1
+# Activity 2
 
 # By: David Ybanez (MSIT 2) University of San Carlos
-# Date: August 30, 2025
+# Date: September 7, 2025
 
 # Contents include:
 # -- I. Initial setup for working directory and load packages
@@ -20,7 +20,9 @@
 # more portable and easier to share and execute.
 
 # Install the this.path package if not already installed
-if (!requireNamespace("this.path", quietly = TRUE)) { install.packages("this.path") }
+if (!requireNamespace("this.path", quietly = TRUE)) {
+  install.packages("this.path")
+}
 
 # Load the this.path package
 library(this.path)
@@ -41,7 +43,9 @@ plot_dir <- file.path(output_dir, "plots")
 dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
 
 # Install and load the dplyr package for data manipulation
-if (!requireNamespace("dplyr", quietly = TRUE)) { install.packages("dplyr") }
+if (!requireNamespace("dplyr", quietly = TRUE)) {
+  install.packages("dplyr")
+}
 
 
 # Load the dplyr package
@@ -49,8 +53,8 @@ library(dplyr)
 
 # ------ 1. Wingspan of Different Bird Species --------------------------------
 
-# 1. Here are values of the wingspan (cm) measured on four different species of 
-#    birds. Create a bar plot of the mean wingspan for each species. Add the 
+# 1. Here are values of the wingspan (cm) measured on four different species of
+#    birds. Create a bar plot of the mean wingspan for each species. Add the
 #    standard error bar for each. To calculate for standard error,
 #    se=sd/sqrt(n).
 
@@ -106,23 +110,24 @@ text(bar_centers, mean_wingspan_agg$Wingspan, labels = round(mean_wingspan_agg$W
 # @return {vector} - vector with the results
 
 mean_wingspan_ta <- tapply(bird_data$Wingspan, bird_data$Species, mean)
-sd_wingspan_ta   <- tapply(bird_data$Wingspan, bird_data$Species, sd)
-n_wingspan_ta    <- tapply(bird_data$Wingspan, bird_data$Species, length)
-se_wingspan_ta   <- sd_wingspan_ta / sqrt(n_wingspan_ta)
+sd_wingspan_ta <- tapply(bird_data$Wingspan, bird_data$Species, sd)
+n_wingspan_ta <- tapply(bird_data$Wingspan, bird_data$Species, length)
+se_wingspan_ta <- sd_wingspan_ta / sqrt(n_wingspan_ta)
 
 ## (optional) quick table to see the numbers
 round(cbind(mean = mean_wingspan_ta, sd = sd_wingspan_ta, n = n_wingspan_ta, se = se_wingspan_ta), 3)
 
 ## Plot: bars + standard error bars
 op <- par(no.readonly = TRUE)
-par(mar = c(6,6,5,3), xaxs = "r", yaxs = "r")  # a little whitespace
+par(mar = c(6, 6, 5, 3), xaxs = "r", yaxs = "r") # a little whitespace
 
-ylim <- c(0, max(mean_wingspan_ta + se_wingspan_ta) * 1.1)  # leave headroom for error bars/labels
+ylim <- c(0, max(mean_wingspan_ta + se_wingspan_ta) * 1.1) # leave headroom for error bars/labels
 bp_ta <- barplot(mean_wingspan_ta,
-              ylim = ylim,
-              ylab = "Mean Wingspan (cm)",
-              xlab = "Bird Species",
-              main = "Mean Wingspan of Different Bird Species")
+  ylim = ylim,
+  ylab = "Mean Wingspan (cm)",
+  xlab = "Bird Species",
+  main = "Mean Wingspan of Different Bird Species"
+)
 
 # error bars (mean ± SE)
 arrows(x0 = bp_ta, y0 = mean_wingspan_ta - se_wingspan_ta, x1 = bp_ta, y1 = mean_wingspan_ta + se_wingspan_ta, angle = 90, code = 3, length = 0.05)
@@ -195,8 +200,8 @@ text(bar_centers, means_filter, labels = round(means_filter, 1), pos = 3)
 
 # ------ 2. Temperature Data Analysis -----------------------------------------
 
-# 2. Calculate for the mean and standard deviation of the temperature. Get the 
-#    maximum and minimum temperatures. Using a bar graph, plot the temperature 
+# 2. Calculate for the mean and standard deviation of the temperature. Get the
+#    maximum and minimum temperatures. Using a bar graph, plot the temperature
 #    for August 27, 2020 (9-11AM).
 
 ### 2.1 Data inspection
@@ -214,10 +219,10 @@ dim(temp_raw_data)
 colnames(temp_raw_data)
 
 # Display first few rows of the data
-head(temp_raw_data) 
+head(temp_raw_data)
 
 # Display last few rows of the data
-tail(temp_raw_data) 
+tail(temp_raw_data)
 
 # Display structure of the data
 str(temp_raw_data)
@@ -294,7 +299,7 @@ table(temp_data$eof)
 # - The temperature column is of character type and needs to be converted to numeric.
 # - The light column is of character type and needs to be converted to numeric.
 # - The button_down, button_up, host_connect, and eof columns are mostly empty.
-# - The button_down, button_up, host_connect, and eof columns contain "Logged" 
+# - The button_down, button_up, host_connect, and eof columns contain "Logged"
 #   events at the end of the data.
 # - The button_down, button_up, host_connect, and eof columns can be removed
 #   for temperature analysis.
@@ -309,7 +314,7 @@ temp_data <- temp_data[, c("datetime", "temperature", "light")]
 temp_data <- temp_data[1:(nrow(temp_data) - 3), ]
 
 # Remove leading/trailing whitespace from datetime
-temp_data$datetime <- trimws(temp_data$datetime) 
+temp_data$datetime <- trimws(temp_data$datetime)
 
 # Convert to proper POSIXct
 temp_data$datetime <- as.POSIXct(temp_data$datetime, format = "%Y-%m-%d %H:%M:%S", tz = "Asia/Tokyo")
@@ -362,36 +367,36 @@ png(filename = file.path(plot_dir, "temperature_barplot_V1_ugly.png"), width = 1
 barplot(temp_subset$temperature, names.arg = format(temp_subset$datetime, "%H:%M"), las = 2, col = "lightblue", ylab = "Temperature (°C)", xlab = "Time (9 - 11 AM)", main = "Temperature on August 27, 2020 (9 - 11 AM)", cex.names = 0.7)
 dev.off()
 
-# View a much more good looking bar plot 
+# View a much more good looking bar plot
 # y = numeric temps, tm = "HH:MM" labels
-y  <- as.numeric(temp_subset$temperature)
+y <- as.numeric(temp_subset$temperature)
 tm <- format(temp_subset$datetime, "%H:%M")
 # compute a tight y-range around the data
-rng  <- range(y, na.rm = TRUE)
+rng <- range(y, na.rm = TRUE)
 # small breathing room
-pad  <- max(0.01, diff(rng) * 0.25)  
+pad <- max(0.01, diff(rng) * 0.25)
 ylim <- c(rng[1] - pad, rng[2] + pad)
 # increase margins to avoid clipping
-par(mar = c(10, 10, 10, 6)) 
+par(mar = c(10, 10, 10, 6))
 # draw bars with zoomed y-axis (no zero)
 bp <- barplot(y, names.arg = tm, las = 2, col = "lightblue", ylim = ylim, ylab = "Temperature (°C)", xlab = "Time (9 - 11 AM)", main = "Temperature on August 27, 2020 (9 - 11 AM)", yaxt = "n", cex.names = 0.9)
 # tidy y ticks
-axis(2, at = pretty(ylim, n = 6))      
+axis(2, at = pretty(ylim, n = 6))
 # optional: mean line to show zoom effect
-abline(h = mean(y, na.rm = TRUE), lty = 3)  
+abline(h = mean(y, na.rm = TRUE), lty = 3)
 # value labels
 text(bp, y, labels = sprintf("%.2f", y), pos = 3, cex = 0.8)
 
 # Save the improved plot to the output directory
 png(filename = file.path(plot_dir, "temperature_barplot_V2_better.png"), width = 1600, height = 600)
 # increase margins to avoid clipping
-par(mar = c(10, 10, 10, 6)) 
+par(mar = c(10, 10, 10, 6))
 # draw bars with zoomed y-axis (no zero)
 bp <- barplot(y, names.arg = tm, las = 2, col = "lightblue", ylim = ylim, ylab = "Temperature (°C)", xlab = "Time (9 - 11 AM)", main = "Temperature on August 27, 2020 (9 - 11 AM)", yaxt = "n", cex.names = 0.9)
 # tidy y ticks
-axis(2, at = pretty(ylim, n = 6))      
+axis(2, at = pretty(ylim, n = 6))
 # optional: mean line to show zoom effect
-abline(h = mean(y, na.rm = TRUE), lty = 3)  
+abline(h = mean(y, na.rm = TRUE), lty = 3)
 # value labels
 text(bp, y, labels = sprintf("%.2f", y), pos = 3, cex = 0.8)
 dev.off()
