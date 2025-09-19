@@ -208,6 +208,11 @@ text(bar_centers, means_filter, labels = round(means_filter, 1), pos = 3)
 
 # Read the temperature data from CSV file (no assumptions)
 temp_raw_data <- read.csv(p("data", "20200827_light_barren_deep.csv"), header = FALSE)
+temp_raw_data_2 <- read.csv(file.path(paste(getwd(), "/data", sep = ""), "20200827_light_barren_deep.csv"), header = FALSE)
+file.path()
+this.path::this.dir()
+getwd()
+normalizePath(getwd())
 
 # Check the structure of the data
 str(temp_raw_data)
