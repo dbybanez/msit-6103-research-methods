@@ -68,7 +68,7 @@ titanic_data <- matrix(
     Rescue = c("Rescued", "Not_Rescued"))
 )
 
-# (a) Determine and interpret the contingency table for the variables "travel
+# (1a) Determine and interpret the contingency table for the variables "travel
 # class" and "rescue status".
 
 # Looking at the raw counts provided in the problem, we have two categorical 
@@ -90,7 +90,7 @@ addmargins(titanic_data)
 # - Staff had 674 rescued and 211 not rescued (total 885).
 # - Overall: 1510 rescued and 718 not rescued out of 2228.
 
-# (b) Use a contingency table to summarize the conditional relative frequency
+# (1b) Use a contingency table to summarize the conditional relative frequency
 # distributions of rescue status given travel class. Could there be an
 # association of the two variables?
 
@@ -118,7 +118,7 @@ print(titanic_conditional_percent)
 #   had lower rescue rates compared to lower classes (Third and Staff).
 # - This suggests that travel class may have influenced rescue likelihood.
 
-# (c) What would the contingency table from (a) look like under the 
+# (1c) What would the contingency table from (a) look like under the 
 # independence assumption? Calculate Cramer's V statistic. Is there any 
 # association between travel class and rescue status?
 
@@ -158,7 +158,7 @@ print(round(cramers_v_manual, 4))
 # - Therefore, we conclude that there is a moderate association between travel
 #   class and rescue status.
 
-# (d) Combine the categories "first class" and "second class" as well as 
+# (1d) Combine the categories "first class" and "second class" as well as 
 # "third class" and "staff". Create a contingency table based on these new 
 # categories. Determine and interpret Cramer's V, the odds ratio, and relative 
 # risks of your choice.
@@ -243,14 +243,14 @@ print(relative_risk)
 # - Both OR and RR confirm that rescue likelihood was consistently lower
 #   for First_Second_Class passengers.
 
-# (e) Given the results from (a) to (d), what are your conclusions?
+# (1e) Given the results from (1a) to (1d), what are your conclusions?
 
-# - (a) Raw counts showed clear differences in rescue outcomes by travel class.
-# - (b) Conditional relative frequencies highlighted that First Class had the lowest
+# - (1a) Raw counts showed clear differences in rescue outcomes by travel class.
+# - (1b) Conditional relative frequencies highlighted that First Class had the lowest
 #   rescue rate (~40%) while Third Class and Staff had the highest (~75%).
-# - (c) Under independence, observed counts differed greatly from expected counts.
+# - (1c) Under independence, observed counts differed greatly from expected counts.
 #   Cramer's V (~0.286) indicated a moderate association.
-# - (d) Even after collapsing into two groups, moderate association remained
+# - (1d) Even after collapsing into two groups, moderate association remained
 #   (Cramer's V ~0.271), and both Odds Ratio (<1) and Relative Risk (<1)
 #   confirmed rescue chances were lower for First_Second_Class than for Third_Staff.
 # - Overall conclusion: Travel class and rescue status are not independent.
@@ -285,7 +285,7 @@ insurance_data <- matrix(
 )
 print(insurance_data)
 
-# (a) Determine and interpret Pearson's x2 statistic, and Cramer's V.
+# (2a) Determine and interpret Pearson's x2 statistic, and Cramer's V.
 
 # Calculate Chi-square test
 chi_square_test_insurance <- chisq.test(insurance_data)
@@ -309,7 +309,7 @@ print(cramers_v_insurance)
 #   differ significantly by vehicle type. And both statistics point to a weak
 #   or negligible association.
 
-# (b) Combine the categories "car" and "car (diesel engine)" and produce the 
+# (2b) Combine the categories "car" and "car (diesel engine)" and produce the 
 # corresponding 2 × 2 table. Calculate x2 as efficiently as possible and give a
 # meaningful interpretation of the odds ratio.
 
@@ -382,12 +382,12 @@ print(odds_ratio_insurance)
 # - Overall, even after combining categories, there is no strong evidence to suggest
 #   that satisfaction levels differ significantly by vehicle type.
 
-# (c) Compare the results from (a) and (b).
+# (2c) Compare the results from (a) and (b).
 
 # Interpretation:
-# - In (a), using the original 3x2 table, the Chi-square statistic was ≈ 3.144
+# - In (2a), using the original 3x2 table, the Chi-square statistic was ≈ 3.144
 #   with df = 2 and p ≈ 0.208. Cramer's V was ≈ 0.145, showing a weak association.
-# - In (b), after collapsing categories into a 2x2 table (Car_Total vs Motorbike),
+# - In (2b), after collapsing categories into a 2x2 table (Car_Total vs Motorbike),
 #   the Chi-square statistic was ≈ 2.279 (uncorrected) or ≈ 1.717 (with Yates correction),
 #   with p-values of ≈ 0.131 and ≈ 0.190 respectively. Both tests again suggest
 #   no statistically significant association.
@@ -441,6 +441,74 @@ print(chi_square_test)
 # - Therefore, the data is consistent with the shop owner's claim that an equal
 #   number of customers come into the shop each weekday.
 
+# =============================================================================
+# 4) Chi-Square Test of Independence
+# =============================================================================
+
+# Suppose we want to know whether or not gender is associated with political
+# party preference. We take a simple random sample of 500 voters and survey 
+# them on their political party preference. The following table shows the 
+# results of the survey:
+
+#                     | Republican | Democrat | Independent | Total
+# --------------------|------------|----------|-------------|------------
+# Male                |    120     |    90    |     40      |  250
+# Female              |    110     |    95    |     45      |  250
+# --------------------|------------|----------|-------------|------------
+# Total               |    230     |   185    |     85      |  500
+
+# Perform a Chi-Square Test of Independence in R to determine if gender is 
+# associated with political party preference.
+
+# Create the contingency table of observed counts
+political_data <- matrix(
+  c(120, 90, 40,
+    110, 95, 45),
+  nrow = 2, byrow = TRUE,
+  dimnames = list(
+    Gender = c("Male", "Female"),
+    Party = c("Republican", "Democrat", "Independent"))
+)
+print(political_data)
+
+# Perform the Chi-Square Test of Independence
+chi_square_test <- chisq.test(political_data)
+
+# Print the results
+print(chi_square_test)
+# x2 = 0.86404, df = 2, p-value = 0.6492
+
+# Interpretation:
+# - The Chi-square statistic is approximately 0.864 with 2 degrees of freedom
+#   and a p-value of 0.6492.
+# - Since the p-value is greater than 0.05, we fail to reject the null hypothesis.
+# - This suggests that there is no statistically significant association between
+#   gender and political party preference.
+# - Therefore, based on this sample, we conclude that gender is not associated
+#   with political party preference.
+# Additional Analysis: Contributions to Chi-Square Statistic and Cramer's V
+# - To further understand the relationship (or lack thereof) between gender
+#   and political party preference, we can examine the contributions to the
+#   Chi-square statistic.
+# - We can also calculate Cramer's V to measure the strength of association
+#   between the two categorical variables.
+
+# Contributions to Chi-square statistic
+contributions <- chi_square_test$observed - chi_square_test$expected
+contributions_squared <- (contributions^2) / chi_square_test$expected
+print(contributions_squared)
+
+# Cramer's V using confintr package
+cramers_v_political <- cramersv(political_data)
+print(cramers_v_political)
+
+# Interpretation of Contributions and Cramer's V:
+# - The contributions to the Chi-square statistic show how much each cell
+#   deviates from the expected count under the null hypothesis of independence.
+# - In this case, the contributions are relatively small, indicating that
+#   the observed counts are close to the expected counts.
+# - Cramer's V is approximately 0.0416, indicating a very weak association
+#   between gender and political party preference.
 
 
 # End of Activity 4
