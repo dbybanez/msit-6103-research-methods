@@ -2,30 +2,24 @@
 # Activity 4
 
 # By: David Ybanez (MSIT 2) University of San Carlos
-# Date: October 2, 2025
+# Date: October 1, 2025
 
 # Contents include:
 # -- I. Initial setup for working directory and load packages
-# -- 1.  Wingspan of Different Bird Species
-# -- 2.  Temperature Data Analysis
+# -- 1. Titanic: class (rows) x rescue status (cols)
+# -- 2. Insurance satisfaction (3x2), then collapse to 2x2
 
-# ------ I. Initial setup for working directory and load packages -------------
+# =============================================================================
+# I. Initial setup for working directory and load packages
+# =============================================================================
 
-# Install and load the this.path package to manage file paths
+# Install packages
+if (!requireNamespace("this.path", quietly = TRUE)) { install.packages("this.path") }
+if (!requireNamespace("confintr", quietly = TRUE)) { install.packages("confintr") }
 
-# this.path package
-# The this.path package provides functions to get the path of the currently
-# executing script. This is useful for setting working directories and managing
-# file paths in a way that is relative to the script's location, making scripts
-# more portable and easier to share and execute.
-
-# Install the this.path package if not already installed
-if (!requireNamespace("this.path", quietly = TRUE)) {
-  install.packages("this.path")
-}
-
-# Load the this.path package
+# Load packages
 library(this.path)
+library(confintr)
 
 # Set the root directory to the location of the current script
 # This helps in managing file paths for data import/export
@@ -42,376 +36,413 @@ output_dir <- "output"
 plot_dir <- file.path(output_dir, "plots")
 dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
 
-# Install and load the dplyr package for data manipulation
-if (!requireNamespace("dplyr", quietly = TRUE)) {
-  install.packages("dplyr")
-}
+# =============================================================================
+# 1) Titanic: class (rows) x rescue status (cols)
+# =============================================================================
 
+# The famous passenger liner Titanic hit an iceberg in 1912 and sank. A total 
+# of 337 passengers travelled in first class, 285 in second class, and 721 in 
+# third class. In addition, there were 885 staff members on board. Not all 
+# passengers could be rescued. Only the following were rescued: 135 from the 
+# first class, 160 from the second class, 541 from the third class and 674 staff.
 
-# Load the dplyr package
-library(dplyr)
+# The data are sumarized in the following contingency table:
+#                | Rescued | Not Rescued | Total
+# ---------------|---------|-------------|------------
+# First Class    |   135   |     202     |  337
+# Second Class   |   160   |     125     |  285
+# Third Class    |   541   |     180     |  721
+# Staff          |   674   |     211     |  885
+# ---------------|---------|-------------|------------
+# Total          |  1510   |     718     | 2228
 
-# ------ 1. Wingspan of Different Bird Species --------------------------------
-
-# 1. Here are values of the wingspan (cm) measured on four different species of
-#    birds. Create a bar plot of the mean wingspan for each species. Add the
-#    standard error bar for each. To calculate for standard error,
-#    se=sd/sqrt(n).
-
-bird_sp <- c("sparrow", "kingfisher", "eagle", "hummingbird", "sparrow", "kingfisher", "eagle", "hummingbird", "sparrow", "kingfisher", "eagle", "hummingbird")
-
-wingspan <- c(22, 26, 199, 8, 24, 23, 201, 9, 20, 25, 188, 8)
-
-# Create a data frame
-bird_data <- data.frame(Species = bird_sp, Wingspan = wingspan)
-bird_data
-
-summary(bird_data)
-head(bird_data$Species)
-class(bird_data$Species)
-bird_data$Species <- as.factor(bird_data$Species)
-class(bird_data$Species)
-
-# Using aggregate() function to calculate mean, sd, n, and se
-# @param {data.frame} (data) - data frame
-# @param {formula} (Wingspan ~ Species) - formula to specify the response and
-# predictor variables
-# @param {function} (FUN) - function to apply (mean, sd, length)
-# @return {data.frame} - data frame with the results
-
-# Calculate mean wingspan for each species
-mean_wingspan_agg <- aggregate(Wingspan ~ Species, data = bird_data, FUN = mean)
-mean_wingspan_agg
-
-# Calculate standard deviation for each species
-sd_wingspan_agg <- aggregate(Wingspan ~ Species, data = bird_data, FUN = sd)
-sd_wingspan_agg
-
-# Calculate sample size for each species
-n_wingspan_agg <- aggregate(Wingspan ~ Species, data = bird_data, FUN = length)
-n_wingspan_agg
-
-# Calculate standard error for each species
-se_wingspan_agg <- sd_wingspan_agg$Wingspan / sqrt(n_wingspan_agg$Wingspan)
-se_wingspan_agg
-
-## (optional) quick table to see the numbers
-round(cbind(mean = mean_wingspan_agg$Wingspan, sd = sd_wingspan_agg$Wingspan, n = n_wingspan_agg$Wingspan, se = se_wingspan_agg), 3)
-
-# Create a bar plot with error bars
-bar_centers <- barplot(mean_wingspan_agg$Wingspan, names.arg = mean_wingspan_agg$Species, ylim = c(0, 220), ylab = "Mean Wingspan (cm)", xlab = "Bird Species", main = "Mean Wingspan of Different Bird Species")
-arrows(bar_centers, mean_wingspan_agg$Wingspan - se_wingspan_agg, bar_centers, mean_wingspan_agg$Wingspan + se_wingspan_agg, angle = 90, code = 3, length = 0.1, col = "red")
-text(bar_centers, mean_wingspan_agg$Wingspan, labels = round(mean_wingspan_agg$Wingspan, 1), pos = 3)
-
-# Using tapply() function to calculate mean, sd, n, and se
-# @param {vector} (bird_data$Wingspan) - numeric vector
-# @param {factor} (bird_data$Species) - factor vector
-# @param {function} (mean, sd, length) - function to apply
-# @return {vector} - vector with the results
-
-mean_wingspan_ta <- tapply(bird_data$Wingspan, bird_data$Species, mean)
-sd_wingspan_ta <- tapply(bird_data$Wingspan, bird_data$Species, sd)
-n_wingspan_ta <- tapply(bird_data$Wingspan, bird_data$Species, length)
-se_wingspan_ta <- sd_wingspan_ta / sqrt(n_wingspan_ta)
-
-## (optional) quick table to see the numbers
-round(cbind(mean = mean_wingspan_ta, sd = sd_wingspan_ta, n = n_wingspan_ta, se = se_wingspan_ta), 3)
-
-## Plot: bars + standard error bars
-op <- par(no.readonly = TRUE)
-par(mar = c(6, 6, 5, 3), xaxs = "r", yaxs = "r") # a little whitespace
-
-ylim <- c(0, max(mean_wingspan_ta + se_wingspan_ta) * 1.1) # leave headroom for error bars/labels
-bp_ta <- barplot(mean_wingspan_ta,
-  ylim = ylim,
-  ylab = "Mean Wingspan (cm)",
-  xlab = "Bird Species",
-  main = "Mean Wingspan of Different Bird Species"
+# Build the contingency tabl of observed counts
+titanic_data <- matrix(
+  c(135, 337 - 135,
+    160, 285 - 160,
+    541, 721 - 541,
+    674, 885 - 674),
+  nrow = 4, byrow = TRUE,
+  dimnames = list(
+    Class = c("First_Class", "Second_Class", "Third_Class", "Staff"),
+    Rescue = c("Rescued", "Not_Rescued"))
 )
 
-# error bars (mean ± SE)
-arrows(x0 = bp_ta, y0 = mean_wingspan_ta - se_wingspan_ta, x1 = bp_ta, y1 = mean_wingspan_ta + se_wingspan_ta, angle = 90, code = 3, length = 0.05)
+# (a) Determine and interpret the contingency table for the variables "travel
+# class" and "rescue status".
 
-# (optional) show mean values on top of bars
-text(bp_ta, mean_wingspan_ta, labels = round(mean_wingspan_ta, 1), pos = 3)
-par(op)
+# Looking at the raw counts provided in the problem, we have two categorical 
+# variables: "Travel Class" and "Rescue Status". The contingency table simply 
+# shows the joint frequency distribution. Each cell tells us how many people in
+# a specific travel class were rescued or not.
+
+# View the contingency table of observed counts
+print(titanic_data)
+
+# The marginal totals (the sums of rows and columns) provide additional context
+addmargins(titanic_data)
+
+# Interpretation (counts-level):
+# - The table shows how rescue outcomes are distributed within each travel class.
+# - First Class had 135 rescued and 202 not rescued (total 337).
+# - Second Class had 160 rescued and 125 not rescued (total 285).
+# - Third Class had 541 rescued and 180 not rescued (total 721).
+# - Staff had 674 rescued and 211 not rescued (total 885).
+# - Overall: 1510 rescued and 718 not rescued out of 2228.
+
+# (b) Use a contingency table to summarize the conditional relative frequency
+# distributions of rescue status given travel class. Could there be an
+# association of the two variables?
+
+# We want the conditional distribution of Rescue Status given Travel Class.
+# This means we want to look at the proportions of rescued vs not rescued
+# within each travel class using prop.table() with margin = 1.
+titanic_conditional <- prop.table(titanic_data, margin = 1)
+print(titanic_conditional)
+
+# Convert to percentages for easier interpretation
+titanic_conditional_percent <- round(titanic_conditional * 100, 1)
+print(titanic_conditional_percent)
+
+# Make a neater table. Sum to 100% across rows
+titanic_conditional_percent <- as.data.frame.matrix(titanic_conditional_percent)
+titanic_conditional_percent$Total <- rowSums(titanic_conditional_percent)
+print(titanic_conditional_percent)
+
+# Interpretation (percentage-level):
+# - First Class: 40.1% rescued, 59.9% not rescued
+# - Second Class: 56.1% rescued, 43.9% not rescued
+# - Third Class: 75.0% rescued, 25.0% not rescued
+# - Staff: 76.1% rescued, 23.9% not rescued
+# - There appears to be an association: higher travel classes (First and Second)
+#   had lower rescue rates compared to lower classes (Third and Staff).
+# - This suggests that travel class may have influenced rescue likelihood.
+
+# (c) What would the contingency table from (a) look like under the 
+# independence assumption? Calculate Cramer's V statistic. Is there any 
+# association between travel class and rescue status?
+
+# Independence assumption means the distribution of Rescue Status is the same
+# across all Travel Classes. We can calculate the expected counts under this
+# assumption using chisq.test().
+chi_square_test <- chisq.test(titanic_data)
+expected_counts <- chi_square_test$expected
+print(round(expected_counts, 2))
+
+# Interpretation (independence-level):
+# - The expected counts show what we would expect if there were no association
+#   between travel class and rescue status.
+# - For example, for First Class, we would expect 228.03 rescued and 108.97
+#   not rescued if rescue status were independent of travel class.
+# - Comparing observed vs expected counts, we see large deviations, suggesting
+#   that the variables are not independent.
+
+# Calculate Cramer's V using confintr package
+# Using cramersv() function from confintr package
+# @param {mat} The contingency table (matrix)
+# @return {numeric} - Cramer's V statistic
+cramers_v <- cramersv(titanic_data)
+print(cramers_v)
+
+# Calculate Cramer's V manually for verification
+n <- sum(titanic_data)  # total sample size
+min_dim <- min(nrow(titanic_data) - 1, ncol(titanic_data) - 1)
+cramers_v_manual <- sqrt(chi_square_test$statistic / (n * min_dim))
+print(round(cramers_v_manual, 4))
+
+# Interpretation (Cramer's V):
+# - Cramer's V is approximately 0.28586, indicating a moderate association
+#   between travel class and rescue status.
+# - Values closer to 0 indicate weak association, while values closer to 1
+#   indicate strong association.
+# - Therefore, we conclude that there is a moderate association between travel
+#   class and rescue status.
+
+# (d) Combine the categories "first class" and "second class" as well as 
+# "third class" and "staff". Create a contingency table based on these new 
+# categories. Determine and interpret Cramer's V, the odds ratio, and relative 
+# risks of your choice.
+
+# Thought: Combining categories can help simplify the analysis and may reveal
+# stronger associations if the combined groups have similar characteristics.
+# We will combine First and Second Class into "First_Second_Class" and Third
+# Class and Staff into "Third_Staff".
+
+# Combine categories and create new contingency table
+titanic_combined <- matrix(
+  c(135 + 160, (337 - 135) + (285 - 160),
+    541 + 674, (721 - 541) + (885 - 674)),
+  nrow = 2, byrow = TRUE,
+  dimnames = list(
+    Class = c("First_Second_Class", "Third_Staff"),
+    Rescue = c("Rescued", "Not_Rescued"))
+)
+print(titanic_combined)
+
+# Calculate Cramer's V for the combined table using confintr package
+cramers_v_combined <- cramersv(titanic_combined) # 0.271
+print(cramers_v_combined)
+
+# Interpretation (Cramer's V for combined):
+# - Cramer's V for the combined table is approximately 0.2709373, indicating a moderate
+#   association between the new travel class categories and rescue status.
+# - This suggests that even after combining categories, there remains a moderate
+#   association between travel class and rescue status.
+# - The association is slightly weaker than before combining, but still notable.
+
+# Calculate Odds Ratio
+# Odds ratio compares the odds of an event occurring in one group to the odds
+# of it occurring in another group. Here, we compare the odds of being rescued
+# in First_Second_Class vs Third_Staff.
+
+# Odds of being rescued in First_Second_Class
+odds_first_second <- (135 + 160) / ((337 - 135) + (285 - 160)) # 0.902
+# Odds of being rescued in Third_Staff
+odds_third_staff <- (541 + 674) / ((721 - 541) + (885 - 674))  # 3.11
+# Odds Ratio
+odds_ratio <- odds_first_second / odds_third_staff
+print(odds_ratio)
+
+# Interpretation (Odds Ratio):
+# - The odds ratio is approximately 0.2903185, indicating that the odds of being
+#   rescued are about 29% as high for First_Second_Class compared to Third_Staff.
+# - This suggests that individuals in the First_Second_Class had significantly
+#   lower odds of being rescued compared to those in Third_Staff.
+# - An odds ratio less than 1 indicates rescue odds are lower in the first group
+#   compared to the second group.
+
+# Calculate Relative Risk
+# Relative risk compares the probability of an event occurring in one group to
+# the probability of it occurring in another group. Here, we compare the risk of
+# being rescued in First_Second_Class vs Third_Staff.
+
+# Risk of being rescued in First_Second_Class
+risk_first_second <- (135 + 160) / (337 + 285) # 0.474
+# Risk of being rescued in Third_Staff
+risk_third_staff <- (541 + 674) / (721 + 885) # 0.757
+# Relative Risk
+relative_risk <- risk_first_second / risk_third_staff
+print(relative_risk)
+
+# Interpretation (Relative Risk):
+# - The relative risk is approximately 0.6269038, indicating that the risk of being
+#   rescued is about 63% as high for First_Second_Class compared to Third_Staff.
+# - This suggests that individuals in the First_Second_Class had a lower risk of
+#   being rescued compared to those in Third_Staff, but the difference is less
+#   pronounced than indicated by the odds ratio.
+
+# Interpretation summary for (d):
+# - After combining, the table shows First_Second_Class had 295 rescued (47%) 
+#   vs Third_Staff with 1215 rescued (76%).
+# - Cramer's V ≈ 0.271 → still a moderate association, only slightly weaker than the original (~0.286).
+#   This is expected since collapsing categories reduces detail.
+# - Odds Ratio ≈ 0.29 → the odds of being rescued in First_Second_Class were about 71% lower
+#   than in Third_Staff.
+# - Relative Risk ≈ 0.63 → the probability of being rescued was only about 63% as high
+#   in First_Second_Class compared to Third_Staff.
+# - Both OR and RR confirm that rescue likelihood was consistently lower
+#   for First_Second_Class passengers.
+
+# (e) Given the results from (a) to (d), what are your conclusions?
+
+# - (a) Raw counts showed clear differences in rescue outcomes by travel class.
+# - (b) Conditional relative frequencies highlighted that First Class had the lowest
+#   rescue rate (~40%) while Third Class and Staff had the highest (~75%).
+# - (c) Under independence, observed counts differed greatly from expected counts.
+#   Cramer's V (~0.286) indicated a moderate association.
+# - (d) Even after collapsing into two groups, moderate association remained
+#   (Cramer's V ~0.271), and both Odds Ratio (<1) and Relative Risk (<1)
+#   confirmed rescue chances were lower for First_Second_Class than for Third_Staff.
+# - Overall conclusion: Travel class and rescue status are not independent.
+#   There is a clear, moderate association, individuals in Third Class or Staff
+#   were more likely to be rescued than those in First or Second Class.
+
+# =============================================================================
+# 2) Insurance satisfaction (3x2), then collapse to 2x2
+# =============================================================================
+
+# A total of 150 customers of a petrol station are asked about their 
+# satisfaction with their car and motorbike insurance. The results are 
+# summarized below:
+
+#                     | Satisfied | Unsatisfied | Total
+# --------------------|-----------|-------------|------------
+# Car                 |     33    |     25      |  58
+# Car (diesel engine) |     29    |     31      |  60
+# Motorbike           |     12    |     20      |  32
+# --------------------|-----------|-------------|------------
+# Total               |     74    |     76      |  150
+
+# Build the contingency table of observed counts
+insurance_data <- matrix(
+  c(33, 25,
+    29, 31,
+    12, 20),
+  nrow = 3, byrow = TRUE,
+  dimnames = list(
+    Vehicle = c("Car", "Car_Diesel", "Motorbike"),
+    Satisfaction = c("Satisfied", "Unsatisfied"))
+)
+print(insurance_data)
+
+# (a) Determine and interpret Pearson's x2 statistic, and Cramer's V.
+
+# Calculate Chi-square test
+chi_square_test_insurance <- chisq.test(insurance_data)
+print(chi_square_test_insurance)
+# x2 = 3.144, df = 2, p-value = 0.2076
+
+# Cramer's V using confintr package
+cramers_v_insurance <- cramersv(insurance_data)
+print(cramers_v_insurance)
+# 0.1447759
+
+# Interpretation (Chi-square and Cramer's V):
+# - The Chi-square statistic is approximately 3.144 with 2 degrees of freedom
+#   and a p-value of 0.2076.
+# - Since the p-value is greater than 0.05, we fail to reject the null hypothesis
+#   of independence. This suggests that there is no statistically significant
+#   association between vehicle type and satisfaction level.
+# - Cramer's V is approximately 0.145, indicating a weak association between
+#   vehicle type and satisfaction level.
+# - Overall, there is no strong evidence to suggest that satisfaction levels
+#   differ significantly by vehicle type. And both statistics point to a weak
+#   or negligible association.
+
+# (b) Combine the categories "car" and "car (diesel engine)" and produce the 
+# corresponding 2 × 2 table. Calculate x2 as efficiently as possible and give a
+# meaningful interpretation of the odds ratio.
+
+# Combine categories and create new contingency table
+insurance_combined <- matrix(
+  c(33 + 29, 25 + 31,
+    12, 20),
+  nrow = 2, byrow = TRUE,
+  dimnames = list(
+    Vehicle = c("Car_Total", "Motorbike"),
+    Satisfaction = c("Satisfied", "Unsatisfied"))
+)
+print(insurance_combined)
+
+# Calculate Chi-square manually wihtout continuity correction
+# Using the formula: χ² = N(ad - bc)² / ((a+b)(c+d)(a+c)(b+d))
+# where a, b, c, d are the cell counts in the 2x2 table
+# a = 33 + 29 = 62 (Car_Total, Satisfied)
+# b = 25 + 31 = 56 (Car_Total, Unsatisfied)
+# c = 12 (Motorbike, Satisfied)
+# d = 20 (Motorbike, Unsatisfied)
+a <- 62; b <- 56; c <- 12; d <- 20
+N <- a+b+c+d
+chi_sq_uncorr <- N * ( (a*d - b*c)^2 ) / ((a+b)*(c+d)*(a+c)*(b+d))
+print(chi_sq_uncorr)
+# 2.278823
+
+# Calculate Chi-square test manually with Yates' continuity correction
+# Yates' correction subtracts 0.5 from the absolute difference between
+# observed and expected frequencies to reduce bias in small samples.
+chi_sq_yates <- N * ((abs(a*d - b*c) - N/2)^2) / ((a+b)*(c+d)*(a+c)*(b+d))
+print(chi_sq_yates)
+# 1.716753
+
+# Calculate Chi-square test using chisq.test() without continuity correction
+chi_square_test_yates <- chisq.test(insurance_combined, correct = FALSE)
+print(chi_square_test_yates)
+# x2 = 2.2788, df = 1, p-value = 0.1312
+
+# Calculate Chi-square test for combined table with continuity correction
+chi_square_test_combined <- chisq.test(insurance_combined)
+print(chi_square_test_combined)
+# x2 = 1.7168, df = 1, p-value = 0.1901
+
+# Efficient formula: x2 (uncorrected) ≈ 2.279, p ≈ 0.131
+# R's default with Yates correction: x2 ≈ 1.717, p ≈ 0.190
+# Both > 0.05 → no significant association.
+
+# Calculate Odds Ratio
+# Odds of being satisfied with Car_Total
+odds_car_total <- (33 + 29) / (25 + 31) # 1.0323
+# Odds of being satisfied with Motorbike
+odds_motorbike <- 12 / 20  # 0.6
+# Odds Ratio
+odds_ratio_insurance <- odds_car_total / odds_motorbike
+print(odds_ratio_insurance)
+# 1.845238
+
+# Interpretation (Chi-square and Odds Ratio for combined):
+# - The Chi-square statistic for the combined table is approximately 1.7168 with
+#   1 degree of freedom and a p-value of 0.1901 (with continuity correction).
+# - Since the p-value is greater than 0.05, we again fail to reject the null hypothesis
+#   of independence. This suggests that there is still no statistically significant
+#   association between vehicle type and satisfaction level after combining categories.
+# - The Odds Ratio is approximately 1.845, indicating that the odds of being satisfied
+#   are about 1.85 times higher for Car_Total compared to Motorbike.
+# - However, since the Chi-square test did not show significance, we should be cautious
+#   in interpreting the Odds Ratio as indicating a meaningful difference in satisfaction
+#   between the two vehicle types.
+# - Overall, even after combining categories, there is no strong evidence to suggest
+#   that satisfaction levels differ significantly by vehicle type.
+
+# (c) Compare the results from (a) and (b).
+
+# Interpretation:
+# - In (a), using the original 3x2 table, the Chi-square statistic was ≈ 3.144
+#   with df = 2 and p ≈ 0.208. Cramer's V was ≈ 0.145, showing a weak association.
+# - In (b), after collapsing categories into a 2x2 table (Car_Total vs Motorbike),
+#   the Chi-square statistic was ≈ 2.279 (uncorrected) or ≈ 1.717 (with Yates correction),
+#   with p-values of ≈ 0.131 and ≈ 0.190 respectively. Both tests again suggest
+#   no statistically significant association.
+# - The Odds Ratio for the collapsed table was ≈ 1.85, suggesting car owners may
+#   have higher odds of being satisfied than motorbike owners. However, since the
+#   Chi-square test was not significant, this difference should be interpreted
+#   with caution.
+# - Overall, both analyses point to the same conclusion: there is no strong evidence
+#   of a meaningful association between vehicle type and satisfaction level.
+#   Collapsing categories slightly changed the numbers but did not change the
+#   overall conclusion.
+
+# =============================================================================
+# 3) Chi-Square Goodness-of-Fit Test
+# =============================================================================
+
+# A shop owner claims that an equal number of customers come into his shop each
+# weekday. To test this hypothesis, a researcher records the number of
+# customers that come into the shop in a given week and finds the following:
+# - Monday:    50 customers
+# - Tuesday:   60 customers
+# - Wednesday: 40 customers
+# - Thursday:  47 customers
+# - Friday:    53 customers
+
+# Perform a Chi-Square goodness of fit test in R to determine if the data is 
+# consistent with the shop owner's claim.
+
+# Create a vector of observed counts
+observed_counts <- c(50, 60, 40, 47, 53)
+names(observed_counts) <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+print(observed_counts)
+
+# Create a vector of expected counts (equal distribution)
+expected_counts <- rep(sum(observed_counts) / length(observed_counts), length(observed_counts))
+print(expected_counts) # 50 for each day
+
+# Perform the Chi-Square goodness-of-fit test
+chi_square_test <- chisq.test(observed_counts, p = expected_counts / sum(expected_counts))
+
+# Print the results
+print(chi_square_test)
+# X-squared = 4.36, df = 4, p-value = 0.3595
+
+# Interpretation:
+# - The Chi-square statistic is approximately 4.36 with 4 degrees of freedom
+#   and a p-value of 0.3595.
+# - Since the p-value is greater than 0.05, we fail to reject the null hypothesis.
+# - This suggests that there is no statistically significant difference between
+#   the observed and expected customer counts across the weekdays.
+# - Therefore, the data is consistent with the shop owner's claim that an equal
+#   number of customers come into the shop each weekday.
 
 
-# Using filter() function to create subsets to calculate mean, sd, n, and se
-# for each species.
-# @param {data.frame} (data) - data frame
-# @param {expression} (Species == "species_name") - condition to filter rows
-# @return {data.frame} - filtered data frame
-sparrow_filter <- filter(bird_data, Species == "sparrow")
-kingfisher_filter <- filter(bird_data, Species == "kingfisher")
-eagle_filter <- filter(bird_data, Species == "eagle")
-hummingbird_filter <- filter(bird_data, Species == "hummingbird")
 
-sparrow_filter_mean <- mean(sparrow_filter$Wingspan)
-sparrow_filter_mean
-sparrow_filter_sd <- sd(sparrow_filter$Wingspan)
-sparrow_filter_sd
-sparrow_filter_n <- length(sparrow_filter$Wingspan)
-sparrow_filter_n
-sparrow_filter_se <- sparrow_filter_sd / sqrt(sparrow_filter_n)
-sparrow_filter_se
-
-kingfisher_filter_mean <- mean(kingfisher_filter$Wingspan)
-kingfisher_filter_mean
-kingfisher_filter_sd <- sd(kingfisher_filter$Wingspan)
-kingfisher_filter_sd
-kingfisher_filter_n <- length(kingfisher_filter$Wingspan)
-kingfisher_filter_n
-kingfisher_filter_se <- kingfisher_filter_sd / sqrt(kingfisher_filter_n)
-kingfisher_filter_se
-
-eagle_filter_mean <- mean(eagle_filter$Wingspan)
-eagle_filter_mean
-eagle_filter_sd <- sd(eagle_filter$Wingspan)
-eagle_filter_sd
-eagle_filter_n <- length(eagle_filter$Wingspan)
-eagle_filter_n
-eagle_filter_se <- eagle_filter_sd / sqrt(eagle_filter_n)
-eagle_filter_se
-
-hummingbird_filter_mean <- mean(hummingbird_filter$Wingspan)
-hummingbird_filter_mean
-hummingbird_filter_sd <- sd(hummingbird_filter$Wingspan)
-hummingbird_filter_sd
-hummingbird_filter_n <- length(hummingbird_filter$Wingspan)
-hummingbird_filter_n
-hummingbird_filter_se <- hummingbird_filter_sd / sqrt(hummingbird_filter_n)
-hummingbird_filter_se
-
-means_filter <- c(eagle_filter_mean, hummingbird_filter_mean, kingfisher_filter_mean, sparrow_filter_mean)
-means_filter
-sds_filter <- c(eagle_filter_sd, hummingbird_filter_sd, kingfisher_filter_sd, sparrow_filter_sd)
-sds_filter
-ns_filter <- c(eagle_filter_n, hummingbird_filter_n, kingfisher_filter_n, sparrow_filter_n)
-ns_filter
-ses_filter <- c(eagle_filter_se, hummingbird_filter_se, kingfisher_filter_se, sparrow_filter_se)
-ses_filter
-
-# Create a bar plot with error bars
-bar_centers <- barplot(means_filter, names.arg = c("eagle", "hummingbird", "kingfisher", "sparrow"), ylim = c(0, 220), ylab = "Mean Wingspan (cm)", xlab = "Bird Species", main = "Mean Wingspan of Different Bird Species")
-arrows(bar_centers, means_filter - ses_filter, bar_centers, means_filter + ses_filter, angle = 90, code = 3, length = 0.1, col = "red")
-text(bar_centers, means_filter, labels = round(means_filter, 1), pos = 3)
+# End of Activity 4
 
 
-# ------ 2. Temperature Data Analysis -----------------------------------------
-
-# 2. Calculate for the mean and standard deviation of the temperature. Get the
-#    maximum and minimum temperatures. Using a bar graph, plot the temperature
-#    for August 27, 2020 (9-11AM).
-
-### 2.1 Data inspection
-
-# Read the temperature data from CSV file (no assumptions)
-temp_raw_data <- read.csv(p("data", "20200827_light_barren_deep.csv"), header = FALSE)
-temp_raw_data_2 <- read.csv(file.path(paste(getwd(), "/data", sep = ""), "20200827_light_barren_deep.csv"), header = FALSE)
-file.path()
-this.path::this.dir()
-getwd()
-normalizePath(getwd())
-
-# Check the structure of the data
-str(temp_raw_data)
-
-# Check the dimensions of the data
-dim(temp_raw_data)
-
-# Check the column names
-colnames(temp_raw_data)
-
-# Display first few rows of the data
-head(temp_raw_data)
-
-# Display last few rows of the data
-tail(temp_raw_data)
-
-# Display structure of the data
-str(temp_raw_data)
-
-# Initial observations:
-# - The data has 8 columns and 2631 rows.
-# - Column names are V1 to V8 (default names during read).
-# - The first row, first column appears to be a metadata (serial number). This
-#   should be removed for analysis.
-# - The first column appears to be date-time information.
-# - The second column appears to be temperature readings.
-# - The third column appears to be light intensity (in lux).
-# - The fourth to eighth columns appear to be button presses and other flags.
-# - The seventh column appears to be an end-of-file (eof) marker.
-# - The eight column appears to be empty (based on head and tail output).
-
-# Further inspection of the data (columns four to eight)
-
-# V4 - Button down events
-table(temp_raw_data$V4)
-
-# V5 - Button up events
-table(temp_raw_data$V5)
-
-# V6 - Host connect events
-table(temp_raw_data$V6)
-
-# V7 - End of file marker
-table(temp_raw_data$V7)
-
-# V8 - Empty column
-table(temp_raw_data$V8)
-
-# Further observations:
-# - Columns V4 to V7 contain mostly zeros with a few ones, indicating button
-#   presses and events.
-# - Column V8 is empty and can be removed.
-# - The main columns of interest for temperature analysis are V1 (datetime) and
-#   V2 (temperature).
-
-### 2.2 Data cleaning and preparation
-
-# Create a copy of the raw data for cleaning
-temp_data <- temp_raw_data
-
-# Remove the empty column (V8)
-temp_data <- temp_data[, -8]
-
-# Store metadata (serial number) before removing
-serial_number <- temp_data[1, 1]
-
-# Remove the first row containing a metadata (serial number)
-temp_data <- temp_data[-1, ]
-
-# Use first row as headers
-colnames(temp_data) <- c("datetime", "temperature", "light", "button_down", "button_up", "host_connect", "eof")
-
-# Remove first row again after setting headers
-temp_data <- temp_data[-1, ]
-
-summary(temp_data)
-str(temp_data)
-head(temp_data)
-tail(temp_data)
-
-table(temp_data$button_down)
-table(temp_data$button_up)
-table(temp_data$host_connect)
-table(temp_data$eof)
-
-# Observations after cleaning:
-# - The data now has 2629 rows and 7 columns.
-# - The datetime column is of character type and needs to be converted to POSIXct.
-# - The temperature column is of character type and needs to be converted to numeric.
-# - The light column is of character type and needs to be converted to numeric.
-# - The button_down, button_up, host_connect, and eof columns are mostly empty.
-# - The button_down, button_up, host_connect, and eof columns contain "Logged"
-#   events at the end of the data.
-# - The button_down, button_up, host_connect, and eof columns can be removed
-#   for temperature analysis.
-# - Last three rows does not contain temperature and light data.
-
-# Further cleaning
-
-# Remove columns not needed for temperature analysis
-temp_data <- temp_data[, c("datetime", "temperature", "light")]
-
-# Remove last three rows containing empty and "Logged" values
-temp_data <- temp_data[1:(nrow(temp_data) - 3), ]
-
-# Remove leading/trailing whitespace from datetime
-temp_data$datetime <- trimws(temp_data$datetime)
-
-# Convert to proper POSIXct
-temp_data$datetime <- as.POSIXct(temp_data$datetime, format = "%Y-%m-%d %H:%M:%S", tz = "Asia/Tokyo")
-
-# Convert temperature to numeric
-temp_data$temperature <- as.numeric(temp_data$temperature)
-
-# Convert light to numeric
-temp_data$light <- as.numeric(temp_data$light)
-
-# Final check of cleaned data
-summary(temp_data)
-str(temp_data)
-head(temp_data)
-tail(temp_data)
-
-# Observations after final cleaning:
-# - The datetime column is now in POSIXct format.
-# - The temperature and light columns are now numeric.
-# - The data is ready for analysis.
-
-### 2.3 Data analysis
-
-# Calculate mean temperature
-mean_temp <- mean(temp_data$temperature, na.rm = TRUE)
-mean_temp
-
-# Calculate standard deviation of temperature
-sd_temp <- sd(temp_data$temperature, na.rm = TRUE)
-sd_temp
-
-# Get maximum temperature
-max_temp <- max(temp_data$temperature, na.rm = TRUE)
-max_temp
-
-# Get minimum temperature
-min_temp <- min(temp_data$temperature, na.rm = TRUE)
-min_temp
-
-# Filter data for August 27, 2020 (9-11 AM)
-start_time <- as.POSIXct("2020-08-27 09:00:00", tz = "Asia/Tokyo")
-end_time <- as.POSIXct("2020-08-27 11:00:00", tz = "Asia/Tokyo")
-temp_subset <- subset(temp_data, datetime >= start_time & datetime <= end_time)
-
-# View the bar plot of temperature from 9-11 AM (Looks identical)
-barplot(temp_subset$temperature, names.arg = format(temp_subset$datetime, "%H:%M"), las = 2, col = "lightblue", ylab = "Temperature (°C)", xlab = "Time (9 - 11 AM)", main = "Temperature on August 27, 2020 (9 - 11 AM)", cex.names = 0.7)
-
-# Save the plot to the output directory
-png(filename = file.path(plot_dir, "temperature_barplot_V1_ugly.png"), width = 1600, height = 600)
-barplot(temp_subset$temperature, names.arg = format(temp_subset$datetime, "%H:%M"), las = 2, col = "lightblue", ylab = "Temperature (°C)", xlab = "Time (9 - 11 AM)", main = "Temperature on August 27, 2020 (9 - 11 AM)", cex.names = 0.7)
-dev.off()
-
-# View a much more good looking bar plot
-# y = numeric temps, tm = "HH:MM" labels
-y <- as.numeric(temp_subset$temperature)
-tm <- format(temp_subset$datetime, "%H:%M")
-# compute a tight y-range around the data
-rng <- range(y, na.rm = TRUE)
-# small breathing room
-pad <- max(0.01, diff(rng) * 0.25)
-ylim <- c(rng[1] - pad, rng[2] + pad)
-# increase margins to avoid clipping
-par(mar = c(10, 10, 10, 6))
-# draw bars with zoomed y-axis (no zero)
-bp <- barplot(y, names.arg = tm, las = 2, col = "lightblue", ylim = ylim, ylab = "Temperature (°C)", xlab = "Time (9 - 11 AM)", main = "Temperature on August 27, 2020 (9 - 11 AM)", yaxt = "n", cex.names = 0.9)
-# tidy y ticks
-axis(2, at = pretty(ylim, n = 6))
-# optional: mean line to show zoom effect
-abline(h = mean(y, na.rm = TRUE), lty = 3)
-# value labels
-text(bp, y, labels = sprintf("%.2f", y), pos = 3, cex = 0.8)
-
-# Save the improved plot to the output directory
-png(filename = file.path(plot_dir, "temperature_barplot_V2_better.png"), width = 1600, height = 600)
-# increase margins to avoid clipping
-par(mar = c(10, 10, 10, 6))
-# draw bars with zoomed y-axis (no zero)
-bp <- barplot(y, names.arg = tm, las = 2, col = "lightblue", ylim = ylim, ylab = "Temperature (°C)", xlab = "Time (9 - 11 AM)", main = "Temperature on August 27, 2020 (9 - 11 AM)", yaxt = "n", cex.names = 0.9)
-# tidy y ticks
-axis(2, at = pretty(ylim, n = 6))
-# optional: mean line to show zoom effect
-abline(h = mean(y, na.rm = TRUE), lty = 3)
-# value labels
-text(bp, y, labels = sprintf("%.2f", y), pos = 3, cex = 0.8)
-dev.off()
-
-# Alternatively, create a line plot of temperature from 9-11 AM for better visibility
-plot(temp_subset$datetime, temp_subset$temperature, type = "b", xlab = "Time (9 - 11 AM)", ylab = "Temperature (°C)", main = "Temperature on August 27, 2020 (9 - 11 AM)")
-
-# Save the line plot to the output directory
-png(filename = file.path(plot_dir, "temperature_lineplot_V1.png"), width = 1600, height = 600)
-plot(temp_subset$datetime, temp_subset$temperature, type = "b", xlab = "Time (9 - 11 AM)", ylab = "Temperature (°C)", main = "Temperature on August 27, 2020 (9 - 11 AM)")
-dev.off()
-
-# End of Activity 2

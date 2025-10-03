@@ -78,13 +78,13 @@ print(chi_square_test)
 
 # Extract and print the observed counts from the Chi-square test result
 # These represent the actual counts of children with different anemia levels 
-# across each mother’s education level.
+# across each mother's education level.
 observed_counts <- chi_square_test$observed
 print(observed_counts)
 
 # Extract and print the expected counts from the Chi-square test result.
 # These counts are calculated under the assumption that there is no association
-# between the mother’s education level and the child’s anemia status.
+# between the mother's education level and the child's anemia status.
 expected_counts <- chi_square_test$expected
 print(round(expected_counts, 2))
 
@@ -149,16 +149,16 @@ print(round(percentage_contributions, 2))
 # @return {pheatmap} - heatmap visualization of the percentage contributions
 pheatmap(percentage_contributions, display_numbers = TRUE, cluster_rows = FALSE, cluster_cols = FALSE, main = "Percentage Contribution to Chi-Square Statistic")
 
-# Cramér’s V
-# Cramer’s v was developed to measure the association between two categorical 
-# variables. Since Cramer’s v is based on Chi-squared test, they share similar 
+# Cramer's V
+# Cramer's v was developed to measure the association between two categorical 
+# variables. Since Cramer's v is based on Chi-squared test, they share similar 
 # assumptions: 
 # 1. The variables should be measured at an ordinal or nominal level. 
 # 2. Each variable should contain two or more independent groups.
 
-# Note that although Cramer’s v can be applied to ordinal variables, there will
+# Note that although Cramer's v can be applied to ordinal variables, there will
 # be loss of information since the coeffi cient does not care about the order 
-# of the categories. Cramer’s v ranges from 0 to 1, with 0 indicating no 
+# of the categories. Cramer's v ranges from 0 to 1, with 0 indicating no 
 # association at all and 1 indicating perfect association.
 
 # The effect size is calculated in the following manner: 
@@ -184,7 +184,7 @@ pheatmap(percentage_contributions, display_numbers = TRUE, cluster_rows = FALSE,
 # Create a contingency table
 subject_gender <- matrix(c(50, 60, 40, 70, 90, 80), nrow = 3, byrow = TRUE, dimnames = list(c("Math", "Science", "Literature"), c("Male", "Female")))
 
-# Calculate Cramér's V
+# Calculate Cramer's V
 cramers_v <- cramersv(subject_gender)
 print(cramers_v)
 
@@ -196,11 +196,9 @@ print(cramers_v)
 # Create a contingency table
 satisfaction_product <- matrix(c(30, 40, 20, 50, 30, 10, 20, 40, 20), nrow = 3, byrow = TRUE, dimnames = list(c("Low", "Medium", "High"), c("Electronics", "Clothing", "Home Appliances")))
 
-# Calculate Cramér's V
+# Calculate Cramer's V
 cramers_v <- cramersv(satisfaction_product)
 print(cramers_v)
-
-
 
 # End of Activity 4 (Practice)
 
