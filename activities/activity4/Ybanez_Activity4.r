@@ -498,19 +498,26 @@ contributions <- chi_square_test$observed - chi_square_test$expected
 contributions_squared <- (contributions^2) / chi_square_test$expected
 print(contributions_squared)
 
+#                     Party
+#  Gender  Republican    Democrat Independent
+#  Male     0.2173913  0.06756757   0.1470588
+#  Female   0.2173913  0.06756757   0.1470588
+
 # Cramer's V using confintr package
 cramers_v_political <- cramersv(political_data)
 print(cramers_v_political)
+# 0.04157007
 
 # Interpretation of Contributions and Cramer's V:
-# - The contributions to the Chi-square statistic show how much each cell
-#   deviates from the expected count under the null hypothesis of independence.
-# - In this case, the contributions are relatively small, indicating that
-#   the observed counts are close to the expected counts.
-# - Cramer's V is approximately 0.0416, indicating a very weak association
+# - The contributions to the Chi-square statistic are all quite small, indicating
+#   that no single cell in the contingency table is contributing significantly
+#   to the overall Chi-square value. This aligns with our earlier conclusion
+#   that there is no significant association between gender and political party
+#   preference.
+# - Cramer's V is approximately 0.042, indicating a very weak association
 #   between gender and political party preference.
 
-
 # End of Activity 4
+
 
 
