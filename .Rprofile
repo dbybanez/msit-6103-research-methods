@@ -14,3 +14,12 @@ options(
 
 # (optional) speed up lintr a bit and keep messages tidy
 options(lintr.cache = TRUE)
+
+options(
+  languageserver.formatting_style = function(options) {
+    styler::tidyverse_style(
+      indent_by = 2,
+      start_comments_with_one_space = TRUE
+    )
+  }
+)
