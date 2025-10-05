@@ -8,6 +8,7 @@
 # -- I. Initial setup for working directory and load packages
 # -- 1) Speed Limits and Traffic Deaths
 # -- 2) Trees dataset (correlation between Height and Volume)
+# -- 3) Telomere Inheritance
 
 # =============================================================================
 # I. Initial setup for working directory and load packages
@@ -90,11 +91,17 @@ print(spearman_corr) # 0.7378648
 # there is a general trend of increasing traffic deaths with higher speed limits,
 # the relationship may not be strictly linear.
 
+# Conclusion:
+# Both correlation coefficients suggest a positive association between speed limits
+# and traffic deaths, with the Pearson correlation indicating a stronger linear relationship.
+# This information could be useful in discussions about the impact of speed limits
+# on road safety.
+
 # (1c) What are the effects on the correlation coefficients if the speed limit
 # is given in km/h rather than miles/h (1 mile/h ≈ 1.61 km/h)?
 
 speed_limits_kmh <- speed_limits * 1.61 # Convert to km/h
-data_kmh <- data.frame(Speed_Limit_kmh = speed_limits_kmh, Traffic_Deaths = traffic_deaths)
+data_kmh <- data.frame(Country = countries, Speed_Limit_kmh = speed_limits_kmh, Traffic_Deaths = traffic_deaths)
 
 # Calculate the Pearson and Spearman correlation coefficients for km/h
 pearson_corr_kmh <- cor(data_kmh$Speed_Limit_kmh, data_kmh$Traffic_Deaths, method = "pearson")
@@ -109,6 +116,10 @@ print(spearman_corr_kmh) # 0.7378648
 # meaning that they do not depend on the units of measurement. Therefore, the strength
 # and direction of the relationship between speed limits and traffic deaths remain the same
 # regardless of the units used for speed limits.
+
+# Conclusion:
+# The conversion of speed limits from miles/h to km/h does not affect the correlation
+# coefficients, as they are independent of the units of measurement.
 
 # (1d) Consider one more observation: the speed limit for England was
 # 70 miles/h and the death rate was 3.1.
@@ -158,6 +169,11 @@ print(spearman_corr_england) # 0.2648204
 # idea that the additional data point has introduced variability that weakens
 # the overall correlation between speed limits and traffic deaths.
 
+# Conclusion:
+# The inclusion of the England data point significantly weakens the correlation
+# between speed limits and traffic deaths, highlighting the impact that outliers
+# or additional observations can have on correlation measures.
+
 # =============================================================================
 # 2) Trees dataset (correlation between Height and Volume)
 # =============================================================================
@@ -176,9 +192,48 @@ head(trees)
 pearson_corr_trees <- cor(trees$Height, trees$Volume, method = "pearson")
 print(pearson_corr_trees) # 0.5982497
 
+# Pearson correlation test
+pearson_test_trees <- cor.test(trees$Height, trees$Volume, method = "pearson")
+print(pearson_test_trees)
+# Pearson's product-moment correlation
+# data:  trees$Height and trees$Volume
+# t = 4.0205, df = 29, p-value = 0.0003784
+# alternative hypothesis: true correlation is not equal to 0
+# 95 percent confidence interval:
+# 0.3095235 0.7859756
+# sample estimates:
+# cor
+# 0.5982497
+
 # Calculate the Spearman correlation coefficient
 spearman_corr_trees <- cor(trees$Height, trees$Volume, method = "spearman")
 print(spearman_corr_trees) # 0.5787101
+
+# Spearman correlation test
+spearman_test_trees <- cor.test(trees$Height, trees$Volume, method = "spearman")
+print(spearman_test_trees)
+# Spearman's rank correlation rho
+# data:  trees$Height and trees$Volume
+# S = 2089.6, p-value = 0.0006484
+# alternative hypothesis: true rho is not equal to 0
+# sample estimates:
+# rho
+# 0.5787101
+
+# Calculate the Kendall correlation coefficient
+kendall_corr_trees <- cor(trees$Height, trees$Volume, method = "kendall")
+print(kendall_corr_trees) # 0.4496306
+
+# Kendall correlation test
+kendall_test_trees <- cor.test(trees$Height, trees$Volume, method = "kendall")
+print(kendall_test_trees)
+# Kendall's rank correlation tau
+# data:  trees$Height and trees$Volume
+# z = 3.4971, p-value = 0.0004704
+# alternative hypothesis: true tau is not equal to 0
+# sample estimates:
+# tau
+# 0.4496306
 
 # Create a scatter plot
 plot(trees$Height, trees$Volume,
@@ -191,6 +246,72 @@ plot(trees$Height, trees$Volume,
 # Add a regression line for better visualization
 abline(lm(Volume ~ Height, data = trees), col = "red") # upward trend
 
+# Optional: Correlogram for better visualization
+if (!requireNamespace("corrplot", quietly = TRUE)) {
+  install.packages("corrplot")
+}
+library(corrplot)
+
+# Correlogram function
+corrplot2 <- function(
+    data,
+    method = "pearson",
+    sig.level = 0.05,
+    order = "original",
+    diag = FALSE,
+    type = "upper",
+    tl.srt = 90,
+    number.font = 1,
+    number.cex = 1,
+    mar = c(0, 0, 0, 0)) {
+  data_incomplete <- data
+  data <- data[complete.cases(data), ]
+  mat <- cor(data, method = method)
+  cor.mtest <- function(mat, method) {
+    mat <- as.matrix(mat)
+    n <- ncol(mat)
+    p.mat <- matrix(NA, n, n)
+    diag(p.mat) <- 0
+    for (i in 1:(n - 1)) {
+      for (j in (i + 1):n) {
+        tmp <- cor.test(mat[, i], mat[, j], method = method)
+        p.mat[i, j] <- p.mat[j, i] <- tmp$p.value
+      }
+    }
+    colnames(p.mat) <- rownames(p.mat) <- colnames(mat)
+    p.mat
+  }
+  p.mat <- cor.mtest(data, method = method)
+  col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
+  corrplot(
+    mat,
+    method = "color",
+    col = col(200),
+    number.font = number.font,
+    mar = mar,
+    number.cex = number.cex,
+    type = type,
+    order = order,
+    addCoef.col = "black",
+    tl.col = "black",
+    tl.srt = tl.srt,
+    p.mat = p.mat,
+    sig.level = sig.level,
+    insig = "blank",
+    diag = diag
+  )
+}
+
+corrplot2(
+  data = trees[, c("Girth", "Height", "Volume")],
+  method = "pearson",
+  sig.level = 0.05,
+  order = "original",
+  diag = FALSE,
+  type = "upper",
+  tl.srt = 75
+)
+
 # Interpretation:
 # The Pearson correlation coefficient of approximately 0.598 indicates a moderate
 # positive linear relationship between tree height and volume. This suggests that as
@@ -199,10 +320,21 @@ abline(lm(Volume ~ Height, data = trees), col = "red") # upward trend
 # positive monotonic relationship between the two variables. This suggests that while
 # there is a general trend of increasing volume with greater height, the relationship
 # may not be strictly linear.
+# The Kendall correlation coefficient of approximately 0.450 indicates a moderate
+# positive association between tree height and volume. This suggests that as tree height
+# increases, the volume of the tree tends to increase as well, but the relationship
+# may not be strictly linear or monotonic.
 
 # Hypotheses:
 # Null Hypothesis (H0): There is no correlation between tree height and volume (ρ = 0).
 # Alternative Hypothesis (H1): There is a correlation between tree height and volume (ρ ≠ 0).
+
+# Conclusion:
+# The correlation tests for all three methods (Pearson, Spearman, and Kendall)
+# yield p-values less than 0.001, indicating strong evidence to reject the null hypothesis
+# in favor of the alternative hypothesis. This suggests that there is a statistically
+# significant correlation between tree height and volume, with both variables showing
+# a positive association.
 
 # The correlation coefficients suggest rejecting the null hypothesis in favor of the
 # alternative hypothesis, indicating a significant correlation between tree height and volume.
@@ -248,6 +380,10 @@ plot(telomere_data$father_telomere_length, telomere_data$offspring_telomere_leng
   main = "Scatter Plot of Father's vs Offspring's Telomere Length",
   pch = 19, col = "blue"
 )
+
+# Add a regression line for better visualization
+telomere_model <- lm(offspring_telomere_length ~ father_telomere_length, data = telomere_data)
+abline(telomere_model, col = "red")
 
 # (3b) Do the data require any transformation before analysis using linear
 # regression?
