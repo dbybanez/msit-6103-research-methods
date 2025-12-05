@@ -115,42 +115,40 @@ ggplot(moles, aes(x = lnMass, y = lnEnergy, color = caste)) +
 #
 # - Body mass (lnMass) is a strong and significant predictor of energy
 # expenditure, heavier mole-rats use more energy.
-# - Caste also has a significant effect even after accounting for body size: 
+# - Caste also has a significant effect even after accounting for body size:
 # workers expend more energy than lazy individuals of the same mass.
-# - Because this reduced model assumes no interaction, we are interpreting 
+# - Because this reduced model assumes no interaction, we are interpreting
 # the slopes for lnMass as parallel, the two groups increase energy at roughly
-#  the same rate with increasing body mass, differing only in their intercepts
+# the same rate with increasing body mass, differing only in their intercepts
 # (baseline energy levels).
 
 # Conclusion:
 #
 # The reduced ANCOVA model without an interaction term indicates that both body
 # mass and caste significantly influence energy expenditure in naked mole-rats.
-# Larger body mass is associated with higher energy expenditure, and workers 
+# Larger body mass is associated with higher energy expenditure, and workers
 # exhibit higher adjusted energy levels than lazy individuals. The approximately
-# parallel regression lines suggest that the rate at which energy expenditure 
+# parallel regression lines suggest that the rate at which energy expenditure
 # increases with body mass is similar across castes, differing mainly in overall
 # level rather than slope.
-
-The visual (your dashed parallel lines) supports this: workers’ regression line lies consistently above that of lazy mole-rats, but both rise at a similar angle.
 
 # (1.c) Fit the full and include the interaction term and visualize.
 fit1 <- lm(lnEnergy ~ lnMass * caste, data = moles) # includes lnMass:caste
 moles$fit1 <- predict(fit1)
 summary(fit1)
 # Residuals:
-#      Min       1Q   Median       3Q      Max 
-# -0.72004 -0.17990  0.05631  0.19551  0.43128 
-# 
+# Min       1Q   Median       3Q      Max
+# -0.72004 -0.17990  0.05631  0.19551  0.43128
+#
 # Coefficients:
-#                    Estimate Std. Error t value Pr(>|t|)
+# Estimate Std. Error t value Pr(>|t|)
 # (Intercept)          1.2939     1.6691   0.775   0.4441
 # lnMass               0.6069     0.3428   1.771   0.0865 .
 # casteworker         -1.5713     1.9518  -0.805   0.4269
 # lnMass:casteworker   0.4186     0.4147   1.009   0.3206
 # ---
 # Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-# 
+#
 # Residual standard error: 0.2965 on 31 degrees of freedom
 # Multiple R-squared:  0.4278,    Adjusted R-squared:  0.3725
 # F-statistic: 7.727 on 3 and 31 DF,  p-value: 0.0005391
@@ -162,29 +160,29 @@ ggplot(moles, aes(x = lnMass, y = lnEnergy, color = caste)) +
   theme_classic()
 
 # Interpretation:
-# 
-# Including the interaction term allows each caste to have its own slope for the 
+#
+# Including the interaction term allows each caste to have its own slope for the
 # relationship between body mass and energy expenditure.
-# 
+#
 # Although the worker line appears slightly steeper, the interaction term (lnMass:casteworker)
 # is not statistically significant (p = 0.32). This means
-# the difference in slopes is likely due to random variation rather than a 
+# the difference in slopes is likely due to random variation rather than a
 # true difference in how body mass affects energy expenditure between castes.
-# 
-# Both castes follow the same general pattern: as body mass increases, energy 
+#
+# Both castes follow the same general pattern: as body mass increases, energy
 # expenditure increases, but workers tend to maintain higher energy levels overall.
 
-# (1.d) Compare the models with and without the interaction term using anova 
+# (1.d) Compare the models with and without the interaction term using anova
 # Determine whether the full model, with an interaction term, is a significantly
 # better fit than the reduced model, which does not include the interaction term.
 
 anova(fit0, fit1)
 
 # Analysis of Variance Table
-# 
+#
 # Model 1: lnEnergy ~ lnMass + caste
 # Model 2: lnEnergy ~ lnMass * caste
-#   Res.Df    RSS Df Sum of Sq      F Pr(>F)
+# Res.Df    RSS Df Sum of Sq      F Pr(>F)
 # 1     32 2.8145
 # 2     31 2.7249  1  0.089557 1.0188 0.3206
 
@@ -206,18 +204,18 @@ fit_type3 <- lm(lnEnergy ~ lnMass + caste,
 Anova(fit_type3, type = "III")
 
 # Anova Table (Type III tests)
-# 
+#
 # Response: lnEnergy
-#              Sum Sq Df F value    Pr(>F)    
-# (Intercept) 0.00111  1  0.0126    0.9112    
+# Sum Sq Df F value    Pr(>F)
+# (Intercept) 0.00111  1  0.0126    0.9112
 # lnMass      1.88152  1 21.3923 5.887e-05 ***
-# caste       0.63747  1  7.2478    0.0112 *  
+# caste       0.63747  1  7.2478    0.0112 *
 # Residuals   2.81450 32
 # ---
 # Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 # Interpretation:
-# 
+#
 # The Type III ANOVA results confirm that body mass (lnMass) is a highly
 # significant predictor of energy expenditure (p < 0.001). Additionally,
 # caste also has a significant effect (p = 0.0112), indicating that even
@@ -240,20 +238,20 @@ qqline(residuals(fit1)) # normal Q-Q
 par(mfrow = c(1, 1))
 
 # Interpretation:
-# 
-# The residual versus fitted plot shows that the residuals are randomly 
-# distributed around zero, with no clear pattern or funnel shape. This 
+#
+# The residual versus fitted plot shows that the residuals are randomly
+# distributed around zero, with no clear pattern or funnel shape. This
 # indicates that the assumptions of linearity and constant variance (homoscedasticity)
 # are satisfied. The normal Q-Q plot shows that most points fall closely along
-# the diagonal line, suggesting that the residuals are approximately normally 
+# the diagonal line, suggesting that the residuals are approximately normally
 # distributed. Minor deviations at the tails are acceptable and do not indicate
 # serious departures from normality.
 
 # Conclusion:
-# 
-# The diagnostic plots confirm that the ANCOVA model meets the assumptions of 
-# linearity, homoscedasticity, and normality. Therefore, the model provides a 
-# reliable fit for analyzing the relationship between body mass and energy 
+#
+# The diagnostic plots confirm that the ANCOVA model meets the assumptions of
+# linearity, homoscedasticity, and normality. Therefore, the model provides a
+# reliable fit for analyzing the relationship between body mass and energy
 # expenditure across the two mole-rat castes.
 
 # =============================================================================
@@ -280,15 +278,15 @@ ggplot(mammals, aes(x = body_mass_kg, y = brain_mass_g)) +
   theme_classic()
 
 # Interpretation:
-# 
+#
 # The scatter plot displays brain size (g) against body mass (kg) for 62 mammal species.
-# The relationship is not linear in the raw data — most points are clustered near 
-# the origin (small-bodied species), while a few large-bodied species (such as 
+# The relationship is not linear in the raw data — most points are clustered near
+# the origin (small-bodied species), while a few large-bodied species (such as
 # whales and elephants) extend far to the right with disproportionately large body masses.
-# 
-# This creates a curved or exponential pattern, where brain size increases with body 
+#
+# This creates a curved or exponential pattern, where brain size increases with body
 # size, but not at a constant rate. The points suggest that the rate of increase in brain
-# size slows down as body mass becomes very large — in other words, larger animals have 
+# size slows down as body mass becomes very large — in other words, larger animals have
 # bigger brains, but the increase is less than proportional to body mass.
 
 # (2.b) Find a transformation (for either or both variables) that makes the
@@ -308,9 +306,9 @@ ggplot(mammals, aes(x = log_body, y = log_brain)) +
 
 # Interpretation:
 #
-# The logarithmic transformation of both body mass and brain size successfully linearized 
+# The logarithmic transformation of both body mass and brain size successfully linearized
 # the relationship between the two variables. This transformation reveals a strong linear
-# association on the log scale, confirming that brain size scales predictably with body mass 
+# association on the log scale, confirming that brain size scales predictably with body mass
 # across mammal species according to an allometric (power-law) relationship.
 
 # (2.c) Is there statistical evidence that brain size is correlated with body
