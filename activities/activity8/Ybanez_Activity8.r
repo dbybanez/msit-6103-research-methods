@@ -255,3 +255,12 @@ leveneTest(weight_loss ~ interaction(diet, gender), data = diet_data)
 par(mfrow = c(2, 2))
 plot(anova_diet_gender)
 par(mfrow = 1)
+
+# The residual diagnostics indicate that the assumptions of ANOVA were
+# adequately met. The Residuals vs Fitted and Scale–Location plots show no
+# major pattern or heteroscedasticity. The Normal Q–Q plot shows minor
+# deviations at the lower tail, but the overall distribution remains
+# approximately normal, which is acceptable given the sample size. The
+# Residuals vs Leverage plot does not identify any influential observations.
+# Combined with non-significant Levene's tests (p > 0.05), the ANOVA
+# assumptions are considered satisfied.
